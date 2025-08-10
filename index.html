@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boxcar Children Quiz</title>
+    <link rel="icon" href="https://placehold.co/64x64/005691/ffffff?text=BC" type="image/png">
+    <link rel="apple-touch-icon" href="https://placehold.co/192x192/005691/ffffff?text=BC">
+    <link rel="manifest" id="manifest-link">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+        
+        :root {
+            --primary-color: #005691;
+            --secondary-color: #f7b731;
+            --background-light: #e6eef5;
+            --background-dark: #b8cde4;
+            --text-color: #333;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, var(--background-light), var(--background-dark));
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .quiz-container {
+            background-color: white;
+            padding: 2.5rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px var(--shadow-color);
+            width: 100%;
+            max-width: 600px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .quiz-container h1 {
+            color: var(--primary-color);
+            margin-bottom: 1.5rem;
+            font-size: 2.2rem;
+        }
+        
+        .quiz-header {
+            margin-bottom: 2rem;
+        }
+
+        .quiz-header h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .choices {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .choice-btn {
+            background-color: #f0f4f8;
+            color: var(--primary-color);
+            border: 2px solid var(--primary-color);
+            border-radius: 12px;
+            padding: 1rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 6px var(--shadow-color);
+        }
+
+        .choice-btn:hover {
+            background-color: var(--primary-color);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 10px rgba(0,0,0,0.15);
+        }
+
+        .choice-btn.correct {
+            background-color: #28a745;
+            color: white;
+            border-color: #28a745;
+        }
+
+        .choice-btn.incorrect {
+            background-color: #dc3545;
+            color: white;
+            border-color: #dc3545;
+        }
+
+        .message {
+            margin-top: 1.5rem;
+            font-size: 1.2rem;
+            font-weight: 700;
+            min-height: 25px;
+        }
+
+        .score-container {
+            margin-top: 2rem;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        #restart-btn {
+            display: none;
+            margin-top: 2rem;
+            background-color: var(--secondary-color);
+            color: var(--primary-color);
+            border: none;
+            padding: 0.8rem 2rem;
+            font-size: 1.1rem;
+            font-weight: 700;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 6px var(--shadow-color);
+        }
+
+        #restart-btn:hover {
+            transform: scale(1.05);
+            background-color: #ffc107;
+        }
+
+        @media (max-width: 600px) {
+            .quiz-container {
+                padding: 1.5rem;
+            }
+            h1 {
+                font-size: 1.8rem;
+            }
+            .choice-btn {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <main class="quiz-container">
+        <h1>The Boxcar Children Quiz</h1>
+        <section class="quiz-header">
+            <h2 id="question-text"></h2>
+        </section>
+        <div id="choices-container" class="choices"></div>
+        <p id="message" class="message"></p>
+        <div id="score-container" class="score-container">Score: <span id="score">0</span> / <span id="total-questions"></span></div>
+        <button id="restart-btn">Play Again</button>
+    </main>
+
+    <script>
+        // Quiz data - an array of questions, options, and the correct answer.
+        const quizData = [
+            {
+                question: "What are the names of the four Alden children?",
+                choices: ["Henry, Jessie, Violet, Benny", "John, Lily, Sarah, Ben", "Thomas, Mary, Jane, David", "Peter, Susan, Edmund, Lucy"],
+                correct: "Henry, Jessie, Violet, Benny"
+            },
+            {
+                question: "Where do the Alden children first make their home?",
+                choices: ["In a tree house", "In an old boxcar", "In a cave", "In a tent"],
+                correct: "In an old boxcar"
+            },
+            {
+                question: "What is the name of the dog they find?",
+                choices: ["Lucky", "Spot", "Watch", "Pal"],
+                correct: "Watch"
+            },
+            {
+                question: "Who is their grandfather?",
+                choices: ["A poor farmer", "A kind doctor", "A wealthy baker", "A kind and wealthy man"],
+                correct: "A kind and wealthy man"
+            },
+            {
+                question: "What did Violet use for her bed?",
+                choices: ["A pile of blankets", "A hammock", "Pine needles and a coat", "A sleeping bag"],
+                correct: "Pine needles and a coat"
+            },
+            {
+                question: "Where does Henry get a job to earn money?",
+                choices: ["At a bakery", "At a sawmill", "Working for a doctor", "At a grocery store"],
+                correct: "Working for a doctor"
+            }
+        ];
+
+        // Global state variables
+        let currentQuestionIndex = 0;
+        let score = 0;
+
+        // DOM element references
+        const questionTextElement = document.getElementById('question-text');
+        const choicesContainer = document.getElementById('choices-container');
+        const messageElement = document.getElementById('message');
+        const scoreElement = document.getElementById('score');
+        const totalQuestionsElement = document.getElementById('total-questions');
+        const restartButton = document.getElementById('restart-btn');
+
+        // Set total number of questions on initial load
+        totalQuestionsElement.textContent = quizData.length;
+
+        // Function to display the current question and choices
+        function displayQuestion() {
+            const currentQuestion = quizData[currentQuestionIndex];
+            questionTextElement.textContent = currentQuestion.question;
+            choicesContainer.innerHTML = ''; // Clear previous choices
+
+            currentQuestion.choices.forEach(choice => {
+                const button = document.createElement('button');
+                button.textContent = choice;
+                button.classList.add('choice-btn');
+                button.addEventListener('click', () => checkAnswer(choice, button));
+                choicesContainer.appendChild(button);
+            });
+        }
+
+        // Function to check the user's answer
+        function checkAnswer(selectedChoice, button) {
+            const currentQuestion = quizData[currentQuestionIndex];
+            // Disable all buttons after an answer is selected
+            Array.from(choicesContainer.children).forEach(btn => {
+                btn.disabled = true;
+            });
+
+            if (selectedChoice === currentQuestion.correct) {
+                score++;
+                messageElement.textContent = "Correct!";
+                button.classList.add('correct');
+            } else {
+                messageElement.textContent = "Incorrect!";
+                button.classList.add('incorrect');
+                // Highlight the correct answer
+                Array.from(choicesContainer.children).find(btn => btn.textContent === currentQuestion.correct).classList.add('correct');
+            }
+
+            scoreElement.textContent = score;
+
+            // Move to the next question after a short delay
+            setTimeout(() => {
+                currentQuestionIndex++;
+                if (currentQuestionIndex < quizData.length) {
+                    messageElement.textContent = ''; // Clear the message
+                    displayQuestion();
+                } else {
+                    showResult();
+                }
+            }, 1000);
+        }
+
+        // Function to show the final result
+        function showResult() {
+            questionTextElement.textContent = "Quiz Complete!";
+            choicesContainer.innerHTML = '';
+            messageElement.textContent = `You got ${score} out of ${quizData.length} questions correct!`;
+            restartButton.style.display = 'block';
+        }
+
+        // Event listener for the restart button
+        restartButton.addEventListener('click', () => {
+            currentQuestionIndex = 0;
+            score = 0;
+            scoreElement.textContent = score;
+            messageElement.textContent = '';
+            restartButton.style.display = 'none';
+            displayQuestion();
+        });
+
+        // Initialize the quiz
+        displayQuestion();
+
+        // PWA functionality
+        document.addEventListener('DOMContentLoaded', () => {
+            // Check for service worker support and register it
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', () => {
+                    navigator.serviceWorker.register('/service-worker.js')
+                        .then(registration => {
+                            console.log('Service Worker registered with scope:', registration.scope);
+                        })
+                        .catch(error => {
+                            console.log('Service Worker registration failed:', error);
+                        });
+                });
+            }
+
+            // Create manifest.json and service-worker.js blobs and link them
+            const manifestContent = {
+                name: "Boxcar Children Quiz",
+                short_name: "BC Quiz",
+                description: "A quiz app for fans of the Boxcar Children books.",
+                start_url: "/",
+                display: "standalone",
+                background_color: "#e6eef5",
+                theme_color: "#005691",
+                icons: [
+                    {
+                        src: "https://placehold.co/192x192/005691/ffffff?text=BC",
+                        sizes: "192x192",
+                        type: "image/png"
+                    },
+                    {
+                        src: "https://placehold.co/512x512/005691/ffffff?text=BC",
+                        sizes: "512x512",
+                        type: "image/png"
+                    }
+                ]
+            };
+
+            const serviceWorkerContent = `
+                const CACHE_NAME = 'boxcar-children-quiz-v1';
+                const urlsToCache = [
+                    '/',
+                    '/index.html',
+                    'https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap'
+                ];
+                
+                self.addEventListener('install', event => {
+                    event.waitUntil(
+                        caches.open(CACHE_NAME)
+                            .then(cache => {
+                                console.log('Opened cache');
+                                return cache.addAll(urlsToCache);
+                            })
+                    );
+                });
+                
+                self.addEventListener('fetch', event => {
+                    event.respondWith(
+                        caches.match(event.request)
+                            .then(response => {
+                                // Cache hit - return response
+                                if (response) {
+                                    return response;
+                                }
+                                return fetch(event.request);
+                            })
+                    );
+                });
+            `;
+
+            // Create a Blob for the manifest file
+            const manifestBlob = new Blob([JSON.stringify(manifestContent)], { type: 'application/json' });
+            const manifestUrl = URL.createObjectURL(manifestBlob);
+            document.getElementById('manifest-link').href = manifestUrl;
+
+            // Create a Blob for the service worker file
+            const swBlob = new Blob([serviceWorkerContent], { type: 'application/javascript' });
+            const swUrl = URL.createObjectURL(swBlob);
+
+            // Register the service worker using the blob URL
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register(swUrl)
+                    .then(registration => {
+                        console.log('Service Worker registered with blob URL scope:', registration.scope);
+                    })
+                    .catch(error => {
+                        console.log('Service Worker registration with blob URL failed:', error);
+                    });
+            }
+        });
+    </script>
+</body>
+</html>
